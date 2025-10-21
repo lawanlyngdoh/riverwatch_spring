@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/_layout :: layout(~{::body})}">
+  <body>
+    <h1 class="text-2xl font-semibold mb-4">Reports</h1>
+    <p class="text-gray-600 mb-4">Download recent detection and water quality reports.</p>
+    <div class="rw-card p-4">
+      <ul class="list-disc pl-6 text-sm">
+        <li><a class="text-blue-600 underline" href="#">Daily detection report (CSV)</a></li>
+        <li><a class="text-blue-600 underline" href="#">Weekly water quality summary (PDF)</a></li>
+      </ul>
+    </div>
+  </body>
+</html>

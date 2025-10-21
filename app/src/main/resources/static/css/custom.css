@@ -1,0 +1,21 @@
+.nav-link{display:block;padding:.5rem .75rem;border-radius:.5rem;color:#1f2937}
+.nav-link:hover{background:#f3f4f6}
+.nav-link.active{background:#eef2ff;color:#1d4ed8}
+.rw-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px}
+.alert{padding:1rem;border-radius:.75rem;border:1px solid #e5e7eb;background:#fff}
+.alert-critical{background:#fef2f2;border-color:#fecaca}
+.alert-warn{background:#f1f5f9;border-color:#e2e8f0}
+.alert .badges span{font-size:.7rem;background:#e5e7eb;border-radius:999px;padding:.1rem .5rem;margin-right:.25rem}
+.bar{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.bar>div{background:#3b82f6;height:100%}
+
+/* --- Chart sizing ------------------------------------------------------- */
+.chart-box {
+  height: 340px;            /* adjust: 280–420px depending on your taste */
+  position: relative;       /* required for Chart.js responsive sizing */
+}
+
+.chart-box > canvas {
+  width: 100% !important;
+  height: 100% !important;  /* canvas fills the fixed-height wrapper */
+}
