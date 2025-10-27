@@ -1,70 +1,90 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title th:text="${pageTitle} ?: 'RiverWatch'">RiverWatch</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'RiverWatch'">RiverWatch</title>
 
-  <!-- Google Fonts (plain href to avoid Thymeleaf expression parsing) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CDN for quick styling -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/custom.css">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/custom.css">
 
-  <!-- Chart.js for charts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900" style="font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;">
-  <div class="flex min-h-screen">
+<div class="flex min-h-screen">
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r border-gray-200 p-4 hidden md:block">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">RW</div>
-        <div>
-          <div class="font-semibold">RiverWatch</div>
-          <div class="text-xs text-gray-500">Environmental Monitor</div>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">RW</div>
+            <div>
+                <div class="font-semibold">RiverWatch</div>
+                <div class="text-xs text-gray-500">Environmental Monitor</div>
+            </div>
         </div>
-      </div>
 
-      <div class="text-xs uppercase tracking-wide text-gray-500 mb-2">Monitoring</div>
-      <nav class="space-y-1">
-        <a href="/dashboard" class="nav-link" th:classappend="${active}=='dashboard' ? ' active' : ''">📊 Dashboard</a>
-        <a href="/water-quality" class="nav-link" th:classappend="${active}=='water-quality' ? ' active' : ''">💧 Water Quality</a>
-        <a href="#" class="nav-link">🌡️ Temperature</a>
-        <a href="#" class="nav-link">🌊 Flow Rates</a>
-        <a href="#" class="nav-link">📍 Locations</a>
-      </nav>
+        <div class="text-xs uppercase tracking-wide text-gray-500 mb-2">Monitoring</div>
+        <nav class="space-y-1">
+            <a href="/dashboard" class="nav-link" th:classappend="${active}=='dashboard' ? ' active' : ''">📊 Dashboard</a>
+            <a href="/water-quality" class="nav-link" th:classappend="${active}=='water-quality' ? ' active' : ''">💧 Water Quality</a>
+            <a href="#" class="nav-link">🌡️ Temperature</a>
+            <a href="#" class="nav-link">🌊 Flow Rates</a>
+            <!-- 📍 Locations removed -->
+        </nav>
 
-      <div class="text-xs uppercase tracking-wide text-gray-500 mt-6 mb-2">System</div>
-      <nav class="space-y-1">
-        <a href="/reports" class="nav-link" th:classappend="${active}=='reports' ? ' active' : ''">📄 Reports</a>
-        <a href="#" class="nav-link">🔔 Alerts</a>
-        <a href="#" class="nav-link">⚙️ Settings</a>
-      </nav>
+        <div class="text-xs uppercase tracking-wide text-gray-500 mt-6 mb-2">System</div>
+        <nav class="space-y-1">
+            <a href="/reports" class="nav-link" th:classappend="${active}=='reports' ? ' active' : ''">📄 Reports</a>
+            <a href="#" class="nav-link">🔔 Alerts</a>
+            <a href="#" class="nav-link">⚙️ Settings</a>
+        </nav>
     </aside>
 
     <!-- Main -->
     <div class="flex-1 flex flex-col">
-      <!-- Top bar -->
-      <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6">
-        <div class="text-gray-800 font-medium" th:text="${pageTitle}">Environmental Dashboard</div>
-        <div class="flex items-center gap-3">
-          <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">Live Data</span>
-          <input type="text" placeholder="Search monitoring stations..." class="hidden md:block rounded-md border border-gray-200 px-3 py-1.5 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <button class="w-8 h-8 rounded-full bg-gray-100">🔔</button>
-          <div class="w-8 h-8 rounded-full bg-gray-200"></div>
-        </div>
-      </header>
+        <!-- Header -->
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6">
+            <div class="text-gray-800 font-medium" th:text="${pageTitle}">Environmental Dashboard</div>
+            <div class="flex items-center gap-3">
+                <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">Live Data</span>
 
-      <main class="p-4 md:p-6">
-        <div th:insert="${content}"></div>
-      </main>
+                <!-- Locations dropdown: only appears when locations model attribute is provided -->
+                <th:block th:if="${locations}">
+                    <form th:action="@{/dashboard}" method="get" class="hidden md:flex items-center gap-2">
+                        <label for="locationSelect" class="text-sm text-gray-500">Location</label>
+                        <select id="locationSelect" name="loc"
+                                class="rounded-md border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option th:each="loc : ${locations}"
+                                    th:value="${loc.id}"
+                                    th:selected="${currentLocation != null} ? ${currentLocation.id} == ${loc.id} : ${false}"
+                                    th:text="${loc.name}">Location</option>
+                        </select>
+                        <button type="submit"
+                                class="rounded-md border border-gray-200 px-3 py-1.5 text-sm bg-gray-900 text-white">
+                            Apply
+                        </button>
+                    </form>
+                </th:block>
+
+                <input type="text" placeholder="Search monitoring stations..."
+                       class="hidden md:block rounded-md border border-gray-200 px-3 py-1.5 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button class="w-8 h-8 rounded-full bg-gray-100">🔔</button>
+                <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+            </div>
+        </header>
+
+        <main class="p-4 md:p-6">
+            <div th:insert="${content}"></div>
+        </main>
     </div>
-  </div>
+</div>
 
-  <script src="/js/app.js"></script>
+<script src="/js/app.js"></script>
 </body>
 </html>
