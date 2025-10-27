@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="fragments/_layout :: layout(~{::body})">
+<body>
+<div>
+    <h1 class="text-2xl font-semibold mb-4">System Alerts</h1>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+                <th class="px-4 py-2 text-left">Time</th>
+                <th class="px-4 py-2 text-left">Severity</th>
+                <th class="px-4 py-2 text-left">Location</th>
+                <th class="px-4 py-2 text-left">Message</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${alerts}" class="border-t border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-2" th:text="${a.time}"></td>
+                <td class="px-4 py-2">
+              <span th:text="${a.level}"
+                    th:classappend="${a.level}=='Critical' ? 'text-red-600 font-semibold' :
+                                    (${a.level}=='Warning' ? 'text-yellow-600 font-semibold' : 'text-gray-600')">
+              </span>
+                </td>
+                <td class="px-4 py-2" th:text="${a.location}"></td>
+                <td class="px-4 py-2" th:text="${a.message}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -31,8 +31,6 @@ public class PageController {
         List<LocationOption> list = new ArrayList<>();
         list.add(new LocationOption("wah_umkhrah", "Wah Umkhrah"));
         list.add(new LocationOption("wah_umshyrpi", "Wah Umshyrpi"));
-        list.add(new LocationOption("umroi_cp", "Umroi Checkpoint"));
-        list.add(new LocationOption("bhagam_river", "Bhagam River"));
         return list;
     }
 
@@ -75,4 +73,20 @@ public class PageController {
         model.addAttribute("active", "reports");
         return "reports";
     }
+    @GetMapping("/alerts")
+    public String alerts(Model model) {
+        model.addAttribute("pageTitle", "System Alerts");
+        model.addAttribute("active", "alerts");
+
+        // Demo data for now (swap with DB/service later)
+        record Alert(String time, String level, String location, String message) {}
+        var alerts = java.util.List.of(
+                new Alert("2025-10-27 07:45", "Critical", "Wah Umkhrah", "Device running in Low Power"),
+                new Alert("2025-10-27 07:20", "Warning", "Wah Umshyrpi", "Camera stream dropped frames"),
+                new Alert("2025-10-26 21:30", "Info", "Random_river1", "Device Offline")
+        );
+        model.addAttribute("alerts", alerts);
+        return "alerts";
+    }
+
 }

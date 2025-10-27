@@ -33,15 +33,15 @@
         <nav class="space-y-1">
             <a href="/dashboard" class="nav-link" th:classappend="${active}=='dashboard' ? ' active' : ''">📊 Dashboard</a>
             <a href="/water-quality" class="nav-link" th:classappend="${active}=='water-quality' ? ' active' : ''">💧 Water Quality</a>
-            <a href="#" class="nav-link">🌡️ Temperature</a>
-            <a href="#" class="nav-link">🌊 Flow Rates</a>
+            <!-- 🌡️ Temperature removed -->
+            <!-- 🌊 Flow Rates removed -->
             <!-- 📍 Locations removed -->
         </nav>
 
         <div class="text-xs uppercase tracking-wide text-gray-500 mt-6 mb-2">System</div>
         <nav class="space-y-1">
             <a href="/reports" class="nav-link" th:classappend="${active}=='reports' ? ' active' : ''">📄 Reports</a>
-            <a href="#" class="nav-link">🔔 Alerts</a>
+            <a href="/alerts" class="nav-link" th:classappend="${active}=='alerts' ? ' active' : ''">🔔 Alerts</a>
             <a href="#" class="nav-link">⚙️ Settings</a>
         </nav>
     </aside>
@@ -54,7 +54,7 @@
             <div class="flex items-center gap-3">
                 <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">Live Data</span>
 
-                <!-- Locations dropdown: only appears when locations model attribute is provided -->
+                <!-- Locations dropdown -->
                 <th:block th:if="${locations}">
                     <form th:action="@{/dashboard}" method="get" class="hidden md:flex items-center gap-2">
                         <label for="locationSelect" class="text-sm text-gray-500">Location</label>
@@ -71,11 +71,6 @@
                         </button>
                     </form>
                 </th:block>
-
-                <input type="text" placeholder="Search monitoring stations..."
-                       class="hidden md:block rounded-md border border-gray-200 px-3 py-1.5 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button class="w-8 h-8 rounded-full bg-gray-100">🔔</button>
-                <div class="w-8 h-8 rounded-full bg-gray-200"></div>
             </div>
         </header>
 
