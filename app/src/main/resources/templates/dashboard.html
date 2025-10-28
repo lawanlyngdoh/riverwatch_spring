@@ -1,76 +1,150 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/_layout :: layout(~{::body})}">
-  <body>
-    <section class="mb-6">
-      <h1 class="text-3xl font-semibold">River Garbage Detection Dashboard</h1>
-      <p class="text-gray-600">AI-powered floating debris monitoring system</p>
-    </section>
+<body>
+<section class="mb-6">
+    <h1 class="text-3xl font-semibold">River Garbage Detection Dashboard</h1>
+    <p class="text-gray-600">AI-powered floating debris monitoring system</p>
+</section>
 
-    <!-- Stat cards -->
-    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-      <div class="rw-card p-4">
+<!-- Stat cards -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="rw-card p-4">
         <div class="text-sm text-gray-500">Active Cameras</div>
         <div class="flex items-end gap-2">
-          <div class="text-3xl font-semibold" th:text="${activeCameras}">12</div>
-          <div class="text-xs text-green-600">+2 today</div>
+            <div id="kpiActive" class="text-3xl font-semibold" th:text="${activeCameras}">0</div>
+            <div class="text-xs text-green-600">+2 today</div>
         </div>
-      </div>
-      <div class="rw-card p-4">
+    </div>
+    <div class="rw-card p-4">
         <div class="text-sm text-gray-500">Detections Today</div>
         <div class="flex items-end gap-2">
-          <div class="text-3xl font-semibold" th:text="${detectionsToday}">247</div>
-          <div class="text-xs text-red-600">+18% vs yesterday</div>
+            <div id="kpiDetections" class="text-3xl font-semibold" th:text="${detectionsToday}">0</div>
+            <div class="text-xs text-red-600">+18% vs yesterday</div>
         </div>
-      </div>
-      <div class="rw-card p-4">
+    </div>
+    <div class="rw-card p-4">
         <div class="text-sm text-gray-500">Model Version</div>
         <div class="flex items-center gap-2">
-          <div class="text-2xl font-semibold" th:text="${modelVersion}">v2.1.4</div>
-          <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs">Production</span>
+            <div id="kpiModel" class="text-2xl font-semibold" th:text="${modelVersion}">v0.0.0</div>
+            <span id="kpiStage" class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs">dev</span>
         </div>
-      </div>
-      <div class="rw-card p-4">
+    </div>
+    <div class="rw-card p-4">
         <div class="text-sm text-gray-500">Avg Confidence</div>
         <div class="flex items-end gap-2">
-          <div class="text-3xl font-semibold" th:text="${avgConfidence}">87.2%</div>
-          <div class="text-xs text-green-600">+2.1% this week</div>
+            <div class="text-3xl font-semibold"><span id="kpiConf" th:text="${avgConfidence}">0.00</span>%</div>
+            <div class="text-xs text-green-600">+2.1% this week</div>
         </div>
-      </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Chart -->
-    <section class="rw-card p-4">
-      <div class="flex items-center justify-between mb-2">
+<!-- Chart -->
+<section class="rw-card p-4">
+    <div class="flex items-center justify-between mb-2">
         <div>
-          <div class="font-medium">Detections Over Time</div>
-          <div class="text-sm text-gray-500">Floating garbage detection trends</div>
+            <div class="font-medium">Detections Over Time</div>
+            <div class="text-sm text-gray-500">Floating garbage detection trends</div>
         </div>
-        <select class="border border-gray-200 rounded-md px-2 py-1 text-sm">
-          <option>Last 24 hours</option>
-          <option>Last 7 days</option>
-          <option>Last 30 days</option>
+        <select class="border border-gray-200 rounded-md px-2 py-1 text-sm" id="rangeSelect">
+            <option value="24h" selected>Last 24 hours</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
         </select>
-      </div>
-      <div class="chart-box">
+    </div>
+    <div class="chart-box">
         <canvas id="chartDetections" height="120"></canvas>
-      </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Alerts -->
-    <section class="rw-card p-4 mt-6">
-      <div class="font-medium mb-3">Recent Alerts</div>
-      <div class="space-y-3">
+<!-- Alerts (static card left as-is for now) -->
+<section class="rw-card p-4 mt-6">
+    <div class="font-medium mb-3">Recent Alerts</div>
+    <div class="space-y-3">
         <div class="alert alert-critical">
-          <div class="font-medium">High Debris Concentration</div>
-          <div class="text-sm text-gray-600">Camera #7: 15+ floating objects detected in 30s window</div>
-          <div class="badges"><span>Critical</span><span>Auto-detected</span></div>
+            <div class="font-medium">High Debris Concentration</div>
+            <div class="text-sm text-gray-600">Camera #7: 15+ floating objects detected in 30s window</div>
+            <div class="badges"><span>Critical</span><span>Auto-detected</span></div>
         </div>
         <div class="alert alert-warn">
-          <div class="font-medium">Camera Offline</div>
-          <div class="text-sm text-gray-600">Camera #3: Connection lost, no data received for 10+ minutes</div>
-          <div class="badges"><span>Warning</span><span>System</span></div>
+            <div class="font-medium">Camera Offline</div>
+            <div class="text-sm text-gray-600">Camera #3: Connection lost, no data received for 10+ minutes</div>
+            <div class="badges"><span>Warning</span><span>System</span></div>
         </div>
-      </div>
-    </section>
-  </body>
+    </div>
+</section>
+
+<!-- Live data script -->
+<script>
+    (function () {
+        const params = new URLSearchParams(window.location.search);
+        const loc = params.get('loc') || '';
+
+        const kpiActiveEl = document.getElementById('kpiActive');
+        const kpiDetectionsEl = document.getElementById('kpiDetections');
+        const kpiModelEl = document.getElementById('kpiModel');
+        const kpiStageEl = document.getElementById('kpiStage');
+        const kpiConfEl = document.getElementById('kpiConf');
+
+        async function loadStats() {
+            const res = await fetch(`/api/dashboard/stats${loc ? ('?loc=' + encodeURIComponent(loc)) : ''}`, { cache: 'no-store' });
+            if (!res.ok) return;
+            const data = await res.json();
+            kpiActiveEl.textContent = data.activeCameras ?? 0;
+            kpiDetectionsEl.textContent = data.detectionsToday ?? 0;
+            kpiModelEl.textContent = data.modelVersion || 'v0.0.0';
+            kpiStageEl.textContent = data.modelStage || 'dev';
+            const confPct = ((data.avgConfidence ?? 0) * 100).toFixed(2);
+            kpiConfEl.textContent = confPct;
+        }
+
+        // Create chart once
+        const ctx = document.getElementById('chartDetections').getContext('2d');
+        const detChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'Detections', data: [], fill: false }] },
+            options: {
+                responsive: true,
+                animation: false,
+                scales: {
+                    x: { ticks: { maxRotation: 0, autoSkip: true } },
+                    y: { beginAtZero: true, precision: 0 }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        function toLabels(series) {
+            return series.map(p => {
+                const d = new Date(p.t);
+                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            });
+        }
+        function toValues(series) {
+            return series.map(p => p.value);
+        }
+
+        async function loadSeries() {
+            const res = await fetch(`/api/dashboard/series${loc ? ('?loc=' + encodeURIComponent(loc)) : ''}`, { cache: 'no-store' });
+            if (!res.ok) return;
+            const js = await res.json();
+            const labels = toLabels(js.series);
+            const values = toValues(js.series);
+
+            // Update in-place for smooth refresh
+            detChart.data.labels = labels;
+            detChart.data.datasets[0].data = values;
+            detChart.update('none'); // no animation; instant update
+        }
+
+        async function refresh() {
+            await Promise.all([loadStats(), loadSeries()]);
+        }
+
+        // Initial load and 2s cadence
+        refresh();
+        setInterval(refresh, 2000);
+    })();
+</script>
+
+</body>
 </html>
