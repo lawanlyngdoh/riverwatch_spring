@@ -52,7 +52,7 @@
         </select>
     </div>
     <div class="chart-box">
-        <canvas id="chartDetections" height="120"></canvas>
+        <canvas id="chartDetections" height="180"></canvas>
     </div>
 </section>
 
@@ -97,19 +97,65 @@
             kpiConfEl.textContent = confPct;
         }
 
-        // Create chart once
-        const ctx = document.getElementById('chartDetections').getContext('2d');
+        // --- Chart setup (create once) ---
+        const canvas = document.getElementById('chartDetections');
+        const ctx = canvas.getContext('2d');
+
+        // Gradient fill (subtle)
+        function makeGradient(ctx) {
+            const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            g.addColorStop(0, 'rgba(37, 99, 235, 0.28)');  // blue-600 ~28%
+            g.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
+            return g;
+        }
+        const gradient = makeGradient(ctx);
+
         const detChart = new Chart(ctx, {
             type: 'line',
-            data: { labels: [], datasets: [{ label: 'Detections', data: [], fill: false }] },
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Detections',
+                    data: [],
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: 'rgb(37, 99, 235)',   // blue-600
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    tension: 0.35                      // smooth curve
+                }]
+            },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,          // use the canvas height
                 animation: false,
                 scales: {
-                    x: { ticks: { maxRotation: 0, autoSkip: true } },
-                    y: { beginAtZero: true, precision: 0 }
+                    x: {
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { maxRotation: 0, autoSkip: true }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.06)' },
+                        ticks: { precision: 0 }
+                        // suggestedMax will be set dynamically on every refresh
+                    }
                 },
-                plugins: { legend: { display: false } }
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'nearest',
+                        intersect: false,
+                        callbacks: {
+                            title: (items) => items[0]?.label || '',
+                            label: (item) => `Detections: ${item.formattedValue}`
+                        }
+                    }
+                },
+                elements: {
+                    line: { capBezierPoints: true }
+                }
             }
         });
 
@@ -127,13 +173,19 @@
             const res = await fetch(`/api/dashboard/series${loc ? ('?loc=' + encodeURIComponent(loc)) : ''}`, { cache: 'no-store' });
             if (!res.ok) return;
             const js = await res.json();
+
             const labels = toLabels(js.series);
             const values = toValues(js.series);
 
-            // Update in-place for smooth refresh
             detChart.data.labels = labels;
             detChart.data.datasets[0].data = values;
-            detChart.update('none'); // no animation; instant update
+
+            // --- Dynamic Y-axis: compute a nice headroom ---
+            const maxVal = values.length ? Math.max(...values) : 0;
+            const padded = Math.max(5, Math.ceil(maxVal * 1.2)); // 20% headroom, min 5
+            detChart.options.scales.y.suggestedMax = padded;
+
+            detChart.update('none'); // instant, no animation
         }
 
         async function refresh() {
@@ -143,8 +195,15 @@
         // Initial load and 2s cadence
         refresh();
         setInterval(refresh, 2000);
+
+        // Rebuild gradient on resize (for consistent look when container size changes)
+        window.addEventListener('resize', () => {
+            detChart.data.datasets[0].backgroundColor = makeGradient(ctx);
+            detChart.update('none');
+        });
     })();
 </script>
+
 
 </body>
 </html>
