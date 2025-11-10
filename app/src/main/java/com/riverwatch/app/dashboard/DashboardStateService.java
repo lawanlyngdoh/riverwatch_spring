@@ -9,7 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.riverwatch.app.dashboard.DashboardDtos.*;
 
 @Service
-public class DashboardStateService {
+public class DashboardStateService
+{
 
     private final Map<String, DashboardStatsView> current = new ConcurrentHashMap<>();
     private final Map<String, Deque<TimePoint>> series = new ConcurrentHashMap<>();
@@ -21,7 +22,8 @@ public class DashboardStateService {
     // How many points to show if we have no data yet (flat line)
     private static final int DEFAULT_POINTS = 30; // ~1 minute at 2s
 
-    public void upsert(String loc, DashboardStatsPayload payload) {
+    public void upsert(String loc, DashboardStatsPayload payload)
+    {
         var view = new DashboardStatsView(
                 loc,
                 nz(payload.activeCameras(), 0),
@@ -32,27 +34,32 @@ public class DashboardStateService {
         );
         current.put(loc, view);
 
-        if (payload.detectionsSeries() != null && !payload.detectionsSeries().isEmpty()) {
+        if (payload.detectionsSeries() != null && !payload.detectionsSeries().isEmpty())
+        {
             var dq = series.computeIfAbsent(loc, k -> new ArrayDeque<>());
-            for (var p : payload.detectionsSeries()) {
+            for (var p : payload.detectionsSeries())
+            {
                 dq.addLast(p);
             }
             while (dq.size() > MAX_POINTS) dq.removeFirst();
         }
     }
 
-    public DashboardStatsView getCurrent(String loc, String fallbackLoc) {
+    public DashboardStatsView getCurrent(String loc, String fallbackLoc)
+    {
         if (loc == null || loc.isBlank()) loc = fallbackLoc;
         return current.getOrDefault(loc,
                 new DashboardStatsView(loc == null ? "default" : loc, 0, 0, "v0.0.0", "dev", 0.0));
     }
 
-    public SeriesResponse getSeries(String loc, String fallbackLoc) {
+    public SeriesResponse getSeries(String loc, String fallbackLoc)
+    {
         if (loc == null || loc.isBlank()) loc = fallbackLoc;
         var dq = series.getOrDefault(loc, new ArrayDeque<>());
 
         // If empty, return a flat zero line aligned to 2s ticks
-        if (dq.isEmpty()) {
+        if (dq.isEmpty())
+        {
             long now = System.currentTimeMillis();
             long alignedNow = (now / TICK_MS) * TICK_MS;
             List<TimePoint> pad = new ArrayList<>(DEFAULT_POINTS);
@@ -67,5 +74,8 @@ public class DashboardStateService {
         return new SeriesResponse(loc, List.copyOf(dq), Instant.now());
     }
 
-    private static Integer nz(Integer v, int d) { return v == null ? d : v; }
+    private static Integer nz(Integer v, int d)
+    {
+        return v == null ? d : v;
+    }
 }

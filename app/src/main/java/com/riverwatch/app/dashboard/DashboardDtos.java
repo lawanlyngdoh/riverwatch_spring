@@ -3,7 +3,8 @@ package com.riverwatch.app.dashboard;
 import java.time.Instant;
 import java.util.List;
 
-public class DashboardDtos {
+public class DashboardDtos
+{
 
     public record TimePoint(long t, int value) {} // t = epoch millis (for chart)
 
@@ -14,7 +15,7 @@ public class DashboardDtos {
             String modelVersion,
             String modelStage,
             Double avgConfidence,
-            List<TimePoint> detectionsSeries // optional; append-only
+            List<TimePoint> detectionsSeries // optional
     ) {}
 
     public record DashboardStatsView(
