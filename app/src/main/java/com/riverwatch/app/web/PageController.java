@@ -1,5 +1,7 @@
 package com.riverwatch.app.web;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,8 @@ import java.util.List;
 public class PageController {
 
     // --- Simple POJO for the dropdown ---
+    @Setter
+    @Getter
     public static class LocationOption {
         private String id;
         private String name;
@@ -20,10 +24,6 @@ public class PageController {
         public LocationOption() {}
         public LocationOption(String id, String name) { this.id = id; this.name = name; }
 
-        public String getId() { return id; }
-        public void setId(String id) { this.id = id; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
     }
 
     // --- Provide a demo list until DB is wired ---
