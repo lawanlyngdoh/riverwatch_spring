@@ -13,7 +13,7 @@ import java.util.List;
 public class DetectionBucket {
 
     // Keep this consistent with your 15-minute alignment logic
-    private static final Duration BUCKET_WIDTH = Duration.ofMinutes(15);
+    private static final Duration BUCKET_WIDTH = Duration.ofMinutes(1);
 
     private final String cameraId;
     private final Instant bucketStartUtc;

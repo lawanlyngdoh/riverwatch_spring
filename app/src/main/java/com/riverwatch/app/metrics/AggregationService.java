@@ -78,8 +78,7 @@ public class AggregationService {
     private Instant computeBucketStartIstAligned(Instant detectionTimeUtc) {
         ZonedDateTime istTime = detectionTimeUtc.atZone(ZoneId.of("UTC"))
                 .withZoneSameInstant(IST);
-        int minute = istTime.getMinute();
-        int bucketMinute = (minute / 15) * 15;
+        int bucketMinute = istTime.getMinute();
         ZonedDateTime bucketStartIst = istTime
                 .withMinute(bucketMinute)
                 .withSecond(0)
