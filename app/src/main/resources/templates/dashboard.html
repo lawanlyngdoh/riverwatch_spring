@@ -73,6 +73,23 @@
     </div>
 </section>
 
+<!-- SIMPLE PREVIEW MODAL FOR DEMO -->
+<div id="preview-backdrop"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998;">
+</div>
+
+<div id="preview-modal"
+     style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+            background:#ffffff; padding:12px; border-radius:8px; max-width:80vw; max-height:80vh;
+            overflow:auto; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 style="margin:0; font-size:16px;">Detection Preview</h3>
+        <button id="preview-close"
+                style="border:none; background:none; font-size:18px; cursor:pointer;">×</button>
+    </div>
+    <div id="preview-images" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+</div>
+
 <!-- Live data script -->
 <script>
     (function () {
@@ -84,6 +101,50 @@
         const kpiModelEl = document.getElementById('kpiModel');
         const kpiStageEl = document.getElementById('kpiStage');
         const kpiConfEl = document.getElementById('kpiConf');
+
+        // --- DEMO IMAGE PREVIEW SUPPORT ---
+
+        // Static demo images (served from src/main/resources/static/demo/)
+        const DEMO_IMAGES = [
+            '/demo/Sample_1.jpg',
+            '/demo/Sample_2.jpg',
+            '/demo/Sample_3.jpg'
+        ];
+
+        function showBucketPreview() {
+            const modal = document.getElementById('preview-modal');
+            const backdrop = document.getElementById('preview-backdrop');
+            const container = document.getElementById('preview-images');
+
+            container.innerHTML = '';
+
+            // pick up to 3 random demo images for the preview
+            const shuffled = DEMO_IMAGES.slice().sort(() => Math.random() - 0.5);
+            const picks = shuffled.slice(0, Math.min(3, shuffled.length));
+
+            picks.forEach(url => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.maxWidth = '200px';
+                img.style.maxHeight = '150px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
+                img.style.border = '1px solid #ccc';
+                container.appendChild(img);
+            });
+
+            modal.style.display = 'block';
+            backdrop.style.display = 'block';
+        }
+
+        function hideBucketPreview() {
+            document.getElementById('preview-modal').style.display = 'none';
+            document.getElementById('preview-backdrop').style.display = 'none';
+        }
+
+        // Close handlers
+        document.getElementById('preview-close').addEventListener('click', hideBucketPreview);
+        document.getElementById('preview-backdrop').addEventListener('click', hideBucketPreview);
 
         async function loadStats() {
             const res = await fetch(`/api/dashboard/stats${loc ? ('?loc=' + encodeURIComponent(loc)) : ''}`, { cache: 'no-store' });
@@ -100,6 +161,9 @@
         // --- Chart setup (create once) ---
         const canvas = document.getElementById('chartDetections');
         const ctx = canvas.getContext('2d');
+
+        // keep the raw series (not strictly needed for demo now, but harmless)
+        let seriesData = [];
 
         // Gradient fill (subtle)
         function makeGradient(ctx) {
@@ -155,6 +219,14 @@
                 },
                 elements: {
                     line: { capBezierPoints: true }
+                },
+                // DEMO CLICK: any point on the graph shows the preview modal
+                onClick: (evt, elements, chart) => {
+                    if (!elements || !elements.length) {
+                        return;
+                    }
+                    // For demo: ANY clicked data point opens the preview
+                    showBucketPreview();
                 }
             }
         });
@@ -174,8 +246,11 @@
             if (!res.ok) return;
             const js = await res.json();
 
-            const labels = toLabels(js.series);
-            const values = toValues(js.series);
+            // keep the raw series (not strictly necessary for demo)
+            seriesData = js.series || [];
+
+            const labels = toLabels(seriesData);
+            const values = toValues(seriesData);
 
             detChart.data.labels = labels;
             detChart.data.datasets[0].data = values;
@@ -203,7 +278,6 @@
         });
     })();
 </script>
-
 
 </body>
 </html>
