@@ -1,16 +1,17 @@
 package com.riverwatch.app.entity;
 
 import jakarta.persistence.*;
+
 import java.time.Instant;
 
 /**
- * JPA entity representing one 15-minute aggregated bucket for a camera.
+ * One 15-minute aggregated bucket of detections for a given camera.
  */
 @Entity
 @Table(
         name = "camera_aggregate_15m",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"camera_id", "bucket_start"})
+                @UniqueConstraint(columnNames = {"camera_id", "bucket_start_utc"})
         }
 )
 public class CameraAggregate15m {
@@ -18,37 +19,43 @@ public class CameraAggregate15m {
     @EmbeddedId
     private CameraAggregateId id;
 
-    @Column(name = "bucket_end", nullable = false)
-    private Instant bucketEnd;
+    @Column(name = "bucket_end_utc", nullable = false)
+    private Instant bucketEndUtc;
 
     @Column(name = "detections_count", nullable = false)
     private int detectionsCount;
 
     @Column(name = "avg_confidence", nullable = false)
-    private float avgConfidence;
+    private double avgConfidence;
 
     @Column(name = "min_confidence", nullable = false)
-    private float minConfidence;
+    private double minConfidence;
 
     @Column(name = "max_confidence", nullable = false)
-    private float maxConfidence;
+    private double maxConfidence;
 
-    @Column(name = "peak_density", nullable = false)
-    private float peakDensity;
+    @Column(name = "median_confidence", nullable = false)
+    private double medianConfidence;
 
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    @Column(name = "stddev_confidence", nullable = false)
+    private double stddevConfidence;
 
-    // Required no-args constructor
-    public CameraAggregate15m() {}
+    // For future analytics: JSON blob containing extra info
+    @Lob
+    @Column(name = "meta_json")
+    private String metaJson;
+
+    @Column(name = "updated_at_utc", nullable = false)
+    private Instant updatedAtUtc;
+
+    public CameraAggregate15m() {
+    }
 
     public CameraAggregate15m(CameraAggregateId id) {
         this.id = id;
-        this.bucketEnd = id.getBucketStart().plusSeconds(15 * 60);
-        this.updatedAt = Instant.now();
+        this.bucketEndUtc = id.getBucketStartUtc().plusSeconds(15 * 60L);
+        this.updatedAtUtc = Instant.now();
     }
-
-    // ---------------- GETTERS & SETTERS ----------------
 
     public CameraAggregateId getId() {
         return id;
@@ -58,12 +65,12 @@ public class CameraAggregate15m {
         this.id = id;
     }
 
-    public Instant getBucketEnd() {
-        return bucketEnd;
+    public Instant getBucketEndUtc() {
+        return bucketEndUtc;
     }
 
-    public void setBucketEnd(Instant bucketEnd) {
-        this.bucketEnd = bucketEnd;
+    public void setBucketEndUtc(Instant bucketEndUtc) {
+        this.bucketEndUtc = bucketEndUtc;
     }
 
     public int getDetectionsCount() {
@@ -74,43 +81,59 @@ public class CameraAggregate15m {
         this.detectionsCount = detectionsCount;
     }
 
-    public float getAvgConfidence() {
+    public double getAvgConfidence() {
         return avgConfidence;
     }
 
-    public void setAvgConfidence(float avgConfidence) {
+    public void setAvgConfidence(double avgConfidence) {
         this.avgConfidence = avgConfidence;
     }
 
-    public float getMinConfidence() {
+    public double getMinConfidence() {
         return minConfidence;
     }
 
-    public void setMinConfidence(float minConfidence) {
+    public void setMinConfidence(double minConfidence) {
         this.minConfidence = minConfidence;
     }
 
-    public float getMaxConfidence() {
+    public double getMaxConfidence() {
         return maxConfidence;
     }
 
-    public void setMaxConfidence(float maxConfidence) {
+    public void setMaxConfidence(double maxConfidence) {
         this.maxConfidence = maxConfidence;
     }
 
-    public float getPeakDensity() {
-        return peakDensity;
+    public double getMedianConfidence() {
+        return medianConfidence;
     }
 
-    public void setPeakDensity(float peakDensity) {
-        this.peakDensity = peakDensity;
+    public void setMedianConfidence(double medianConfidence) {
+        this.medianConfidence = medianConfidence;
     }
 
-    public Instant getUpdatedAt() {
-        return updatedAt;
+    public double getStddevConfidence() {
+        return stddevConfidence;
     }
 
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setStddevConfidence(double stddevConfidence) {
+        this.stddevConfidence = stddevConfidence;
+    }
+
+    public String getMetaJson() {
+        return metaJson;
+    }
+
+    public void setMetaJson(String metaJson) {
+        this.metaJson = metaJson;
+    }
+
+    public Instant getUpdatedAtUtc() {
+        return updatedAtUtc;
+    }
+
+    public void setUpdatedAtUtc(Instant updatedAtUtc) {
+        this.updatedAtUtc = updatedAtUtc;
     }
 }
