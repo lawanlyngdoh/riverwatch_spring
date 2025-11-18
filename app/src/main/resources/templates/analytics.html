@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/_layout :: layout(~{::body})}">
+<body>
+<section class="mb-6">
+    <h1 class="text-3xl font-semibold">Analytics & Comparisons</h1>
+    <p class="text-gray-600">
+        Aggregated detections per camera and per day over recent buckets (demo dataset).
+    </p>
+</section>
+
+<!-- Date range summary -->
+<section class="rw-card p-4 mb-6">
+    <div class="flex flex-wrap items-center gap-4">
+        <div>
+            <div class="text-sm text-gray-500">Range</div>
+            <div class="text-base font-medium"
+                 th:text="|${fromDate} → ${toDate}|">
+                2025-11-16 → 2025-11-18
+            </div>
+        </div>
+        <div class="hidden md:block h-10 border-l border-gray-200 mx-2"></div>
+        <div>
+            <div class="text-sm text-gray-500">Trend vs previous day</div>
+            <div class="text-sm">
+                <span th:text="${trendLabel}">Increase</span>
+                <span th:if="${trendLabel != 'No change'}"
+                      th:text="|(${#numbers.formatDecimal(trendDeltaPct, 1, 1)}%)|"
+                      class="ml-1 text-xs text-gray-600">
+                    (+25.0%)
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- High-level stats -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="rw-card p-4">
+        <div class="text-sm text-gray-500">Total Detections</div>
+        <div class="text-3xl font-semibold"
+             th:text="${totalDetections}">0</div>
+        <div class="text-xs text-gray-500 mt-1"
+             th:text="|Across ${#lists.size(cameraStats)} cameras|">
+            Across 3 cameras
+        </div>
+    </div>
+
+    <div class="rw-card p-4">
+        <div class="text-sm text-gray-500">Average Confidence</div>
+        <div class="text-3xl font-semibold">
+            <span th:text="${#numbers.formatDecimal(avgConfidencePct, 1, 2)}">0.00</span>%
+        </div>
+        <div class="text-xs text-gray-500 mt-1">Weighted by detections across buckets</div>
+    </div>
+
+    <div class="rw-card p-4">
+        <div class="text-sm text-gray-500">Top Camera</div>
+        <div class="text-lg font-semibold"
+             th:text="${topCamera != null} ? ${topCamera.cameraId} : 'N/A'">
+            cam_01
+        </div>
+        <div class="text-xs text-gray-500 mt-1"
+             th:if="${topCamera != null}"
+             th:text="|${topCamera.detections} detections in range|">
+            64 detections in range
+        </div>
+        <div class="text-xs text-gray-500 mt-1"
+             th:if="${topCamera == null}">
+            No camera data.
+        </div>
+    </div>
+</section>
+
+<!-- Camera comparison table -->
+<section class="rw-card p-4 mb-6">
+    <div class="flex items-center justify-between mb-3">
+        <div>
+            <div class="font-medium">Detections by Camera</div>
+            <div class="text-sm text-gray-500">Sorted by total detections in selected range</div>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+            <tr class="border-b">
+                <th class="text-left py-2 pr-4 text-gray-500">Camera ID</th>
+                <th class="text-right py-2 pr-4 text-gray-500">Detections</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="cam : ${cameraStats}" class="border-b last:border-0">
+                <td class="py-1.5 pr-4 font-mono text-xs"
+                    th:text="${cam.cameraId}">cam_01</td>
+                <td class="py-1.5 pr-4 text-right"
+                    th:text="${cam.detections}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(cameraStats)}">
+                <td colspan="2" class="py-2 text-center text-gray-500">
+                    No camera data in this range.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Daily trend table -->
+<section class="rw-card p-4 mb-6">
+    <div class="flex items-center justify-between mb-3">
+        <div>
+            <div class="font-medium">Detections by Day</div>
+            <div class="text-sm text-gray-500">Summed across all cameras</div>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+            <tr class="border-b">
+                <th class="text-left py-2 pr-4 text-gray-500">Date</th>
+                <th class="text-right py-2 pr-4 text-gray-500">Detections</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="day : ${dailyStats}" class="border-b last:border-0">
+                <td class="py-1.5 pr-4"
+                    th:text="${day.date}">2025-11-18</td>
+                <td class="py-1.5 pr-4 text-right"
+                    th:text="${day.detections}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dailyStats)}">
+                <td colspan="2" class="py-2 text-center text-gray-500">
+                    No daily data in this range.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Optional “busiest day” highlight -->
+<section class="rw-card p-4 mb-6" th:if="${busiestDay != null}">
+    <div class="font-medium mb-1">Busiest Day</div>
+    <p class="text-sm text-gray-600">
+        <span th:text="${busiestDay.date}">2025-11-18</span> had
+        <span th:text="${busiestDay.detections}">0</span>
+        detections across all cameras.
+    </p>
+</section>
+
+</body>
+</html>

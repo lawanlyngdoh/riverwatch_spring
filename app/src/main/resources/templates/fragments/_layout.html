@@ -41,6 +41,10 @@
         <div class="text-xs uppercase tracking-wide text-gray-500 mt-6 mb-2">System</div>
         <nav class="space-y-1">
             <a href="/reports" class="nav-link" th:classappend="${active}=='reports' ? ' active' : ''">📄 Reports</a>
+
+            <!-- ⭐ NEW: Analytics link -->
+            <a href="/analytics" class="nav-link" th:classappend="${active}=='analytics' ? ' active' : ''">📈 Analytics</a>
+
             <a href="/alerts" class="nav-link" th:classappend="${active}=='alerts' ? ' active' : ''">🔔 Alerts</a>
             <a href="#" class="nav-link">⚙️ Settings</a>
         </nav>

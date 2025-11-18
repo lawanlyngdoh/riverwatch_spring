@@ -30,4 +30,16 @@ public interface CameraAggregateRepository extends JpaRepository<CameraAggregate
     List<CameraAggregate15m> findAllAfterAnyCamera(
             @Param("after") Instant after
     );
+
+    // Range query for analytics (note: parameter names are NOT from/to)
+    @Query("""
+        SELECT c FROM CameraAggregate15m c
+        WHERE c.id.bucketStartUtc >= :startTs
+          AND c.id.bucketStartUtc < :endTs
+        ORDER BY c.id.bucketStartUtc ASC
+        """)
+    List<CameraAggregate15m> findInRange(
+            @Param("startTs") Instant startTs,
+            @Param("endTs") Instant endTs
+    );
 }
