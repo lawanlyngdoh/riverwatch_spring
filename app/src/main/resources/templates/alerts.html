@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="fragments/_layout :: layout(~{::body})">
+<body>
+<div>
+    <!-- Page header -->
+    <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-semibold">System Alerts</h1>
+
+        <!-- Severity filter -->
+        <div class="flex items-center gap-2">
+            <label for="severityFilter" class="text-sm text-gray-600">Filter</label>
+            <select id="severityFilter"
+                    class="rounded-md border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option>All</option>
+                <option>Critical</option>
+                <option>Warning</option>
+                <option>Info</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Alerts table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+                <th class="px-4 py-2 text-left">Time</th>
+                <th class="px-4 py-2 text-left">Severity</th>
+                <th class="px-4 py-2 text-left">Location</th>
+                <th class="px-4 py-2 text-left">Message</th>
+            </tr>
+            </thead>
+            <tbody id="alertsBody">
+            <tr th:each="a : ${alerts}"
+                class="border-t border-gray-100 hover:bg-gray-50"
+                th:attr="data-level=${a.level}">
+                <td class="px-4 py-2" th:text="${a.time}"></td>
+
+                <!-- Severity with colored icon + styled label -->
+                <td class="px-4 py-2">
+              <span class="mr-2"
+                    th:text="${a.level}=='Critical' ? '🔴' :
+                             (${a.level}=='Warning' ? '🟡' : '⚪')"></span>
+                    <span th:text="${a.level}"
+                          th:classappend="${a.level}=='Critical' ? 'text-red-600 font-semibold' :
+                                    (${a.level}=='Warning' ? 'text-yellow-600 font-semibold' : 'text-gray-600')">
+              </span>
+                </td>
+
+                <td class="px-4 py-2" th:text="${a.location}"></td>
+                <td class="px-4 py-2" th:text="${a.message}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Page JS -->
+<script>
+    // --- Auto-refresh every ~45 seconds
+    (function () {
+        const REFRESH_MS = 45000;
+        setTimeout(function () { window.location.reload(); }, REFRESH_MS);
+    })();
+
+    // --- Client-side severity filter
+    (function () {
+        const filterEl = document.getElementById('severityFilter');
+        const rows = function () {
+            return Array.from(document.querySelectorAll('#alertsBody tr[data-level]'));
+        };
+
+        function applyFilter() {
+            const val = filterEl.value; // "All", "Critical", "Warning", "Info"
+            rows().forEach(tr => {
+                const level = tr.getAttribute('data-level');
+                tr.style.display = (val === 'All' || val === level) ? '' : 'none';
+            });
+        }
+
+        filterEl.addEventListener('change', applyFilter);
+        // Apply once on load in case you want a non-"All" default later
+        applyFilter();
+    })();
+</script>
+</body>
+</html>
