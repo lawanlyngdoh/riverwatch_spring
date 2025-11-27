@@ -56,7 +56,7 @@
     </div>
 </section>
 
-<!-- Alerts (static card left as-is for now) -->
+<!-- Alerts -->
 <section class="rw-card p-4 mt-6">
     <div class="font-medium mb-3">Recent Alerts</div>
     <div class="space-y-3">
@@ -73,24 +73,73 @@
     </div>
 </section>
 
-<!-- SIMPLE PREVIEW MODAL FOR DEMO -->
+<!-- SIMPLE PREVIEW MODAL -->
 <div id="preview-backdrop"
      style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998;">
 </div>
 
+<!-- UPDATED DIMENSIONS BELOW -->
 <div id="preview-modal"
      style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
-            background:#ffffff; padding:12px; border-radius:8px; max-width:80vw; max-height:80vh;
-            overflow:auto; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+            background:#ffffff; padding:16px; border-radius:10px;
+            width:60vw; max-width:900px; max-height:70vh;
+            overflow:hidden; z-index:9999; box-shadow:0 18px 45px rgba(0,0,0,0.45);">
+
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <h3 style="margin:0; font-size:16px;">Detection Preview</h3>
         <button id="preview-close"
                 style="border:none; background:none; font-size:18px; cursor:pointer;">×</button>
     </div>
-    <div id="preview-images" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="display:flex; gap:6px; align-items:center;">
+            <button id="btn-prev-image"
+                    style="border:1px solid #ddd; border-radius:4px; padding:2px 6px; cursor:pointer; font-size:12px;">
+                ◀
+            </button>
+            <button id="btn-next-image"
+                    style="border:1px solid #ddd; border-radius:4px; padding:2px 6px; cursor:pointer; font-size:12px;">
+                ▶
+            </button>
+
+            <button id="btn-zoom-out"
+                    style="border:1px solid #ddd; border-radius:4px; padding:2px 6px; cursor:pointer; font-size:12px;">
+                −
+            </button>
+            <button id="btn-zoom-in"
+                    style="border:1px solid #ddd; border-radius:4px; padding:2px 6px; cursor:pointer; font-size:12px;">
+                +
+            </button>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+            <span id="preview-index"
+                  style="font-size:12px; color:#666;">0 / 0</span>
+            <a id="btn-download-image"
+               href="#"
+               download="detection.jpg"
+               style="border:1px solid #2563eb; color:#2563eb; border-radius:4px;
+                      padding:2px 8px; font-size:12px; text-decoration:none;">
+                ⬇ Download
+            </a>
+        </div>
+    </div>
+
+    <!-- UPDATED DIMENSIONS BELOW -->
+    <div id="large-image-container"
+         style="text-align:center; margin-bottom:12px; width:100%; max-height:45vh; overflow:auto;">
+        <img id="large-image"
+             src=""
+             style="max-width:100%; max-height:45vh; display:none; border-radius:6px;
+                    transform-origin:center center; image-rendering:auto;" />
+    </div>
+
+    <div id="preview-images"
+         style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+    </div>
 </div>
 
-<!-- Live data script -->
+<!-- Live data + Chart + Preview Script -->
 <script>
     (function () {
         const params = new URLSearchParams(window.location.search);
@@ -102,49 +151,115 @@
         const kpiStageEl = document.getElementById('kpiStage');
         const kpiConfEl = document.getElementById('kpiConf');
 
-        // --- DEMO IMAGE PREVIEW SUPPORT ---
-
-        // Static demo images (served from src/main/resources/static/demo/)
         const DEMO_IMAGES = [
             '/demo/Sample_1.jpg',
             '/demo/Sample_2.jpg',
             '/demo/Sample_3.jpg'
         ];
 
+        let previewImages = [];
+        let currentPreviewIndex = 0;
+        let currentZoom = 1.5;
+
+        function updateLargeImage() {
+            const largeImg = document.getElementById('large-image');
+            const indexLabel = document.getElementById('preview-index');
+            const downloadLink = document.getElementById('btn-download-image');
+            const container = document.getElementById('preview-images');
+
+            if (!previewImages.length) {
+                if (largeImg) {
+                    largeImg.style.display = 'none';
+                    largeImg.src = '';
+                }
+                if (indexLabel) {
+                    indexLabel.textContent = '0 / 0';
+                }
+                if (downloadLink) {
+                    downloadLink.href = '#';
+                }
+                return;
+            }
+
+            const url = previewImages[currentPreviewIndex];
+
+            if (largeImg) {
+                largeImg.src = url;
+                largeImg.style.display = 'block';
+                largeImg.style.transform = `scale(${currentZoom})`;
+            }
+            if (indexLabel) {
+                indexLabel.textContent = (currentPreviewIndex + 1) + ' / ' + previewImages.length;
+            }
+            if (downloadLink) {
+                downloadLink.href = url;
+            }
+
+            if (container) {
+                Array.from(container.children).forEach((el, i) => {
+                    el.style.opacity = i === currentPreviewIndex ? '0.8' : '1';
+                });
+            }
+        }
+
         function showBucketPreview() {
             const modal = document.getElementById('preview-modal');
             const backdrop = document.getElementById('preview-backdrop');
             const container = document.getElementById('preview-images');
+            const scrollContainer = document.getElementById('large-image-container');
+
+            if (!modal || !backdrop || !container) return;
 
             container.innerHTML = '';
 
-            // pick up to 3 random demo images for the preview
             const shuffled = DEMO_IMAGES.slice().sort(() => Math.random() - 0.5);
-            const picks = shuffled.slice(0, Math.min(3, shuffled.length));
+            previewImages = shuffled.slice(0, Math.min(3, shuffled.length));
 
-            picks.forEach(url => {
-                const img = document.createElement('img');
-                img.src = url;
-                img.style.maxWidth = '200px';
-                img.style.maxHeight = '150px';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '4px';
-                img.style.border = '1px solid #ccc';
-                container.appendChild(img);
+            currentPreviewIndex = 0;
+            currentZoom = 1.5;
+
+            if (scrollContainer) {
+                scrollContainer.scrollTop = 0;
+                scrollContainer.scrollLeft = 0;
+            }
+
+            previewImages.forEach((url, idx) => {
+                const thumb = document.createElement('img');
+                thumb.src = url;
+                thumb.style.maxWidth = '140px';
+                thumb.style.maxHeight = '100px';
+                thumb.style.objectFit = 'cover';
+                thumb.style.borderRadius = '4px';
+                thumb.style.border = '1px solid #ccc';
+                thumb.style.cursor = 'pointer';
+                thumb.style.transition = '0.15s';
+                thumb.style.opacity = idx === currentPreviewIndex ? '0.8' : '1';
+
+                thumb.onmouseenter = () => {
+                    if (idx !== currentPreviewIndex) thumb.style.opacity = '0.8';
+                };
+                thumb.onmouseleave = () => {
+                    if (idx !== currentPreviewIndex) thumb.style.opacity = '1';
+                };
+
+                thumb.onclick = () => {
+                    currentPreviewIndex = idx;
+                    currentZoom = 1.5;
+                    updateLargeImage();
+                    if (scrollContainer) {
+                        scrollContainer.scrollTop = 0;
+                        scrollContainer.scrollLeft = 0;
+                    }
+                };
+
+                container.appendChild(thumb);
             });
+
+            updateLargeImage();
 
             modal.style.display = 'block';
             backdrop.style.display = 'block';
         }
-
-        function hideBucketPreview() {
-            document.getElementById('preview-modal').style.display = 'none';
-            document.getElementById('preview-backdrop').style.display = 'none';
-        }
-
-        // Close handlers
-        document.getElementById('preview-close').addEventListener('click', hideBucketPreview);
-        document.getElementById('preview-backdrop').addEventListener('click', hideBucketPreview);
 
         async function loadStats() {
             const res = await fetch(`/api/dashboard/stats${loc ? ('?loc=' + encodeURIComponent(loc)) : ''}`, { cache: 'no-store' });
@@ -158,17 +273,13 @@
             kpiConfEl.textContent = confPct;
         }
 
-        // --- Chart setup (create once) ---
         const canvas = document.getElementById('chartDetections');
         const ctx = canvas.getContext('2d');
-
-        // keep the raw series (not strictly needed for demo now, but harmless)
         let seriesData = [];
 
-        // Gradient fill (subtle)
         function makeGradient(ctx) {
             const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            g.addColorStop(0, 'rgba(37, 99, 235, 0.28)');  // blue-600 ~28%
+            g.addColorStop(0, 'rgba(37, 99, 235, 0.28)');
             g.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
             return g;
         }
@@ -183,16 +294,16 @@
                     data: [],
                     fill: true,
                     backgroundColor: gradient,
-                    borderColor: 'rgb(37, 99, 235)',   // blue-600
+                    borderColor: 'rgb(37, 99, 235)',
                     borderWidth: 2,
                     pointRadius: 2,
                     pointHoverRadius: 4,
-                    tension: 0.35                      // smooth curve
+                    tension: 0.35
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,          // use the canvas height
+                maintainAspectRatio: false,
                 animation: false,
                 scales: {
                     x: {
@@ -203,7 +314,6 @@
                         beginAtZero: true,
                         grid: { color: 'rgba(0,0,0,0.06)' },
                         ticks: { precision: 0 }
-                        // suggestedMax will be set dynamically on every refresh
                     }
                 },
                 plugins: {
@@ -220,12 +330,10 @@
                 elements: {
                     line: { capBezierPoints: true }
                 },
-                // DEMO CLICK: any point on the graph shows the preview modal
                 onClick: (evt, elements, chart) => {
                     if (!elements || !elements.length) {
                         return;
                     }
-                    // For demo: ANY clicked data point opens the preview
                     showBucketPreview();
                 }
             }
@@ -246,7 +354,6 @@
             if (!res.ok) return;
             const js = await res.json();
 
-            // keep the raw series (not strictly necessary for demo)
             seriesData = js.series || [];
 
             const labels = toLabels(seriesData);
@@ -255,27 +362,109 @@
             detChart.data.labels = labels;
             detChart.data.datasets[0].data = values;
 
-            // --- Dynamic Y-axis: compute a nice headroom ---
             const maxVal = values.length ? Math.max(...values) : 0;
-            const padded = Math.max(5, Math.ceil(maxVal * 1.2)); // 20% headroom, min 5
+            const padded = Math.max(5, Math.ceil(maxVal * 1.2));
             detChart.options.scales.y.suggestedMax = padded;
 
-            detChart.update('none'); // instant, no animation
+            detChart.update('none');
         }
 
         async function refresh() {
             await Promise.all([loadStats(), loadSeries()]);
         }
 
-        // Initial load and 2s cadence
         refresh();
         setInterval(refresh, 2000);
 
-        // Rebuild gradient on resize (for consistent look when container size changes)
         window.addEventListener('resize', () => {
             detChart.data.datasets[0].backgroundColor = makeGradient(ctx);
             detChart.update('none');
         });
+
+        (function setupPreviewControls() {
+            const modal = document.getElementById('preview-modal');
+            const backdrop = document.getElementById('preview-backdrop');
+            const largeImg = document.getElementById('large-image');
+            const btnPrev = document.getElementById('btn-prev-image');
+            const btnNext = document.getElementById('btn-next-image');
+            const btnZoomIn = document.getElementById('btn-zoom-in');
+            const btnZoomOut = document.getElementById('btn-zoom-out');
+            const closeBtn = document.getElementById('preview-close');
+
+            function isModalOpen() {
+                return modal && modal.style.display === 'block';
+            }
+
+            function goNext() {
+                if (!previewImages.length) return;
+                currentPreviewIndex = (currentPreviewIndex + 1) % previewImages.length;
+                currentZoom = 1.5;
+                updateLargeImage();
+            }
+
+            function goPrev() {
+                if (!previewImages.length) return;
+                currentPreviewIndex =
+                    (currentPreviewIndex - 1 + previewImages.length) % previewImages.length;
+                currentZoom = 1.5;
+                updateLargeImage();
+            }
+
+            function zoom(delta) {
+                currentZoom = Math.min(3, Math.max(1, currentZoom + delta));
+                updateLargeImage();
+            }
+
+            if (btnNext) btnNext.addEventListener('click', goNext);
+            if (btnPrev) btnPrev.addEventListener('click', goPrev);
+            if (btnZoomIn) btnZoomIn.addEventListener('click', () => zoom(0.25));
+            if (btnZoomOut) btnZoomOut.addEventListener('click', () => zoom(-0.25));
+
+            function hideBucketPreview() {
+                if (modal) modal.style.display = 'none';
+                if (backdrop) backdrop.style.display = 'none';
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', hideBucketPreview);
+            if (backdrop) backdrop.addEventListener('click', hideBucketPreview);
+
+            document.addEventListener('keydown', (evt) => {
+                if (!isModalOpen()) return;
+
+                switch (evt.key) {
+                    case 'ArrowRight':
+                        evt.preventDefault();
+                        goNext();
+                        break;
+                    case 'ArrowLeft':
+                        evt.preventDefault();
+                        goPrev();
+                        break;
+                    case '+':
+                    case '=':
+                        evt.preventDefault();
+                        zoom(0.25);
+                        break;
+                    case '-':
+                    case '_':
+                        evt.preventDefault();
+                        zoom(-0.25);
+                        break;
+                    case 'Escape':
+                        evt.preventDefault();
+                        hideBucketPreview();
+                        break;
+                }
+            });
+
+            if (largeImg) {
+                largeImg.addEventListener('click', () => {
+                    currentZoom = currentZoom < 2 ? 2.5 : 1.5;
+                    updateLargeImage();
+                });
+            }
+        })();
+
     })();
 </script>
 
